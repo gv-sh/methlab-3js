@@ -4,7 +4,8 @@ import { config } from './config.js';
 import { isPointInsidePolygon } from './utils.js';
 
 export class Avatar {
-	constructor(followCam, sceneRef, animationCallback, collidableObjects = null, orbitControls = null) {
+	constructor(sceneName, followCam, sceneRef, animationCallback, collidableObjects = null, orbitControls = null) {
+		this.sceneName = sceneName;
 		this.model = null;
 		this.skeleton = null;
 		this.loader = new GLTFLoader();
@@ -19,11 +20,12 @@ export class Avatar {
 		this.runAction = null;
 		this.animationCallback = animationCallback;
 		this.followCamOffset = config.followCamOffset;
-		this.walkableRegion = config.scene1.walkableRegion;
+		this.sceneConfig = config.scenes.find((scene) => { return scene.name === sceneName; });
+		this.walkableRegion = this.sceneConfig.walkableRegion;
 		this.boundingBox = null;
 		this.collidableObjects = collidableObjects;
 		this.orbitControls = orbitControls;
-		this.interactiveRegion = config.scene1.interactiveRegion;
+		this.interactiveRegion = this.sceneConfig.interactiveRegion;
 
 		// Set the limits to orbit controls
 		if (this.orbitControls) {
@@ -96,12 +98,12 @@ export class Avatar {
 			const walkableRegion = new THREE.BufferGeometry();
 			walkableRegion.setAttribute('position', new THREE.Float32BufferAttribute(verticesArray, 3));
 
-			const walkableRegionMaterial = new THREE.LineBasicMaterial({ color: config.scene1.walkableRegion.color });
+			const walkableRegionMaterial = new THREE.LineBasicMaterial({ color: this.sceneConfig.walkableRegion.color });
 			const walkableRegionLines = new THREE.Line(walkableRegion, walkableRegionMaterial);
 
 			this.scene.add(walkableRegionLines);
 
-			walkableRegionLines.visible = config.scene1.walkableRegion.visible;
+			walkableRegionLines.visible = this.sceneConfig.walkableRegion.visible;
 
 			// Create an array to hold vertex coordinates
 			let verticesArray2 = [];
@@ -113,13 +115,13 @@ export class Avatar {
 			const interactiveRegion = new THREE.BufferGeometry();
 			interactiveRegion.setAttribute('position', new THREE.Float32BufferAttribute(verticesArray2, 3));
 
-			const interactiveRegionMaterial = new THREE.LineBasicMaterial({ color: config.scene1.interactiveRegion.color });
+			const interactiveRegionMaterial = new THREE.LineBasicMaterial({ color: this.sceneConfig.interactiveRegion.color });
 
 			const interactiveRegionLines = new THREE.Line(interactiveRegion, interactiveRegionMaterial);
 
 			this.scene.add(interactiveRegionLines);
 
-			interactiveRegionLines.visible = config.scene1.interactiveRegion.visible;
+			interactiveRegionLines.visible = this.sceneConfig.interactiveRegion.visible;
 
 			this.animations = gltf.animations;
 

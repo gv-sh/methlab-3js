@@ -6,7 +6,6 @@ import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 
 import { config } from '../config.js';
-
 import { Avatar } from '../avatar.js';
 
 import { setupRenderer, setupScene, setupCamera, setupLights, setupOrbitControls, setupAudio, bloomFilter } from '../utils.js';
@@ -15,19 +14,19 @@ export default function Scene1() {
     const containerRef = useRef(null);
 
     useEffect(() => {
-
         const clock = new THREE.Clock();
         const stats = new Stats();
         document.body.appendChild(stats.dom);
 
         // Create a renderer
+        const sceneName = config.scenes[0].name;
         const renderer = setupRenderer(containerRef);
-        const scene = setupScene(renderer);
+        const scene = setupScene(sceneName, renderer);
         const camera = setupCamera(renderer);
         const composer = config.postProcessing.enabled? bloomFilter(renderer, scene, camera): null;
         const light = setupLights(scene);
         const controls = setupOrbitControls(camera, renderer);
-        const sound = setupAudio(camera);
+        const sound = setupAudio(sceneName, camera);
         const updatables = [];
         const disposables = [renderer, scene, camera, composer, light, controls, sound];
 
@@ -57,7 +56,7 @@ export default function Scene1() {
 
         let avatar;
         try {
-            avatar = new Avatar(camera, scene, animate, [], controls);
+            avatar = new Avatar(sceneName, camera, scene, animate, [], controls);
             avatar.load();
             avatar.bindKeyEvents();
             updatables.push(avatar);

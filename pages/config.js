@@ -12,7 +12,7 @@ export const config = {
         fpsStats: true,
     },
     showGridHelper: false,
-    followCamOffset: new THREE.Vector3(0,1.5, -1.5),
+    followCamOffset: new THREE.Vector3(0, 1.5, -1.5),
     bokehPass: false,
     renderer: {
         antialias: true,
@@ -45,35 +45,68 @@ export const config = {
         near: 0.35,
         far: 20
     },
-    scene1: {
-        modelPath: 'gltf/MethLAB.glb',
-        environmentMap: 'hdr/environment.hdr',
-        elevationOffset: -.25,
-        walkableRegion: {
-            vertices: [
-                new THREE.Vector3(-0.8,0,-0.6),
-                new THREE.Vector3(0.6,0,-0.6),
-                new THREE.Vector3(0.6,0,8),
-                new THREE.Vector3(-0.8,0,8), 
-                new THREE.Vector3(-0.8,0,-0.6)
-            ],
-            visible: false,
-            color: 0x00ff00,
+    scenes: [
+        {
+            name: 'MethLab',
+            modelPath: 'gltf/MethLAB.glb',
+            environmentMap: 'hdr/environment.hdr',
+            elevationOffset: -.25,
+            walkableRegion: {
+                vertices: [
+                    new THREE.Vector3(-0.8, 0, -0.6),
+                    new THREE.Vector3(0.6, 0, -0.6),
+                    new THREE.Vector3(0.6, 0, 8),
+                    new THREE.Vector3(-0.8, 0, 8),
+                    new THREE.Vector3(-0.8, 0, -0.6)
+                ],
+                visible: false,
+                color: 0x00ff00,
+            },
+            interactiveRegion: {
+                vertices: [
+                    new THREE.Vector3(-0.5, 0, 2.5),
+                    new THREE.Vector3(1, 0, 2.5),
+                    new THREE.Vector3(1, 0, 4.5),
+                    new THREE.Vector3(-0.5, 0, 4.5),
+                    new THREE.Vector3(-0.5, 0, 2.5)
+                ],
+                visible: false,
+                color: 0xff0000,
+            },
+            bgm: 'mp3/deep-research-144798.mp3',
+            bgmVolume: 0.01
         },
-        interactiveRegion: {
-            vertices: [
-                new THREE.Vector3(-0.5, 0, 2.5),
-                new THREE.Vector3(1, 0, 2.5),
-                new THREE.Vector3(1, 0, 4.5),
-                new THREE.Vector3(-0.5, 0, 4.5),
-                new THREE.Vector3(-0.5, 0, 2.5)
-            ],
-            visible: false,
-            color: 0xff0000,
-        },
-        bgm: 'mp3/deep-research-144798.mp3',
-        bgmVolume: 0.01
-    },
+        {
+            name: 'Diner',
+            modelPath: 'gltf/diner.glb',
+            environmentMap: 'hdr/environment.hdr',
+            elevationOffset: -.25,
+            walkableRegion: {
+                vertices: [
+                    new THREE.Vector3(-0.8, 0, -0.6),
+                    new THREE.Vector3(0.6, 0, -0.6),
+                    new THREE.Vector3(0.6, 0, 8),
+                    new THREE.Vector3(-0.8, 0, 8),
+                    new THREE.Vector3(-0.8, 0, -0.6)
+                ],
+                visible: false,
+                color: 0x00ff00,
+            },
+            interactiveRegion: {
+                vertices: [
+                    new THREE.Vector3(-0.5, 0, 2.5),
+                    new THREE.Vector3(1, 0, 2.5),
+                    new THREE.Vector3(1, 0, 4.5),
+                    new THREE.Vector3(-0.5, 0, 4.5),
+                    new THREE.Vector3(-0.5, 0, 2.5)
+                ],
+                visible: false,
+                color: 0xff0000,
+            },
+            bgm: 'mp3/deep-research-144798.mp3',
+            bgmVolume: 0.01
+        }
+    ],
     postProcessing: {
         enabled: false,
         bloomParams: {

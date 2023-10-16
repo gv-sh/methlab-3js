@@ -84,7 +84,7 @@ export const bokehFilter = (renderer, scene, camera) => {
     return composer;
 }
 
-export const setupScene = (renderer) => {
+export const setupScene = (sceneName, renderer) => {
     const scene = new THREE.Scene();
 
     if (config.fog.visible) {
@@ -97,8 +97,10 @@ export const setupScene = (renderer) => {
         scene.add(gridHelper);
     }
 
+    const sceneConfig = config.scenes.find(scene => scene.name === sceneName);
+
     const envMapLoader = new RGBELoader();
-    envMapLoader.load(config.scene1.environmentMap, (texture) => {
+    envMapLoader.load(sceneConfig.environmentMap, (texture) => {
         const pmremGenerator = new THREE.PMREMGenerator(renderer);
         const envMap = pmremGenerator.fromEquirectangular(texture).texture;
         scene.environment = envMap;
@@ -113,12 +115,12 @@ export const setupScene = (renderer) => {
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
     loader.load(
-        config.scene1.modelPath,
+        sceneConfig.modelPath,
         (gltf) => {
             if (gltf) {
                 const model = gltf.scene;
                 // Move the entire model up by config.scene1.elevationOffset
-                model.position.y = config.scene1.elevationOffset;
+                model.position.y = sceneConfig.elevationOffset;
                 scene.add(model);
                 // Add all the objects in the model into collidableObjects
                 model.traverse((node) => {
@@ -165,7 +167,9 @@ export const setupOrbitControls = (camera, renderer) => {
     return controls;
 }
 
-export const setupAudio = (camera) => {
+export const setupAudio = (sceneName, camera) => {
+    const sceneConfig = config.scenes.find(scene => scene.name === sceneName);
+
     const listener = new THREE.AudioListener();
     camera.add(listener);
 
@@ -178,14 +182,14 @@ export const setupAudio = (camera) => {
     const handleAudioLoaded = (buffer) => {
         sound.setBuffer(buffer);
         sound.setLoop(true);
-        sound.setVolume(config.scene1.bgmVolume);
+        sound.setVolume(sceneConfig.bgmVolume);
         sound.play();  // Moved inside the callback to ensure it plays after load.
     };
 
     // Here, we're checking if the sound object doesn't already have a buffer set to avoid re-loading the audio.
     if (!sound.buffer) {
         audioLoader.load(
-            config.scene1.bgm,
+            sceneConfig.bgm,
             handleAudioLoaded,
             undefined,
             (error) => {
@@ -199,19 +203,19 @@ export const setupAudio = (camera) => {
 
 export const bloomFilter = (renderer, scene, camera) => {
     let composer;
-    const renderScene = new RenderPass( scene, camera );
+    const renderScene = new RenderPass(scene, camera);
 
-    const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
     bloomPass.threshold = config.postProcessing.bloomParams.threshold;
     bloomPass.strength = config.postProcessing.bloomParams.strength;
     bloomPass.radius = config.postProcessing.bloomParams.radius;
 
     const outputPass = new OutputPass();
 
-    composer = new EffectComposer( renderer );
-    composer.addPass( renderScene );
-    composer.addPass( bloomPass );
-    composer.addPass( outputPass );
+    composer = new EffectComposer(renderer);
+    composer.addPass(renderScene);
+    composer.addPass(bloomPass);
+    composer.addPass(outputPass);
 
     return composer;
 }
