@@ -20,6 +20,7 @@ export const config = {
         shadowMapType: THREE.PCFSoftShadowMap,
         toneMapping: THREE.ACESFilmicToneMapping,
     },
+    orbitControls: false,
     avatar: {
         animations: {
             idle: 0,
