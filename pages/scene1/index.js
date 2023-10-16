@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
-import styles from '../../styles/scene.css';
+import styles from '../../styles/styles.module.css';
 
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 
 import { Avatar } from '../avatar.js';
-import { config } from '../config.js';
 
 import { setupRenderer, setupScene, setupCamera, setupLights, setupOrbitControls, setupAudio, bloomFilter } from '../utils.js';
 
@@ -14,8 +13,6 @@ export default function Scene1() {
     const containerRef = useRef(null);
 
     useEffect(() => {
-
-
 
         const clock = new THREE.Clock();
         const stats = new Stats();
