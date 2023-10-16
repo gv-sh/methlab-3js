@@ -75,6 +75,7 @@ export const config = {
         bgmVolume: 0.01
     },
     postProcessing: {
+        enabled: false,
         bloomParams: {
             threshold: 0,
             strength: 0.2,

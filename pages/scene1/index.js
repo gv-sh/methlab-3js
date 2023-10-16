@@ -5,6 +5,8 @@ import styles from '../../styles/styles.module.css';
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 
+import { config } from '../config.js';
+
 import { Avatar } from '../avatar.js';
 
 import { setupRenderer, setupScene, setupCamera, setupLights, setupOrbitControls, setupAudio, bloomFilter } from '../utils.js';
@@ -22,7 +24,7 @@ export default function Scene1() {
         const renderer = setupRenderer(containerRef);
         const scene = setupScene(renderer);
         const camera = setupCamera(renderer);
-        const composer = bloomFilter(renderer, scene, camera);
+        const composer = config.postProcessing.enabled? bloomFilter(renderer, scene, camera): null;
         const light = setupLights(scene);
         const controls = setupOrbitControls(camera, renderer);
         const sound = setupAudio(camera);
@@ -44,7 +46,7 @@ export default function Scene1() {
                 updatables.forEach(updatable => updatable.update(clock.getDelta()));
 
                 renderer.render(scene, camera);
-                composer.render();
+                if (config.postProcessing.enabled) composer.render();
                 stats.update();
             } catch (error) {
                 console.error("Error during animation: ", error);
