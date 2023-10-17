@@ -80,7 +80,7 @@ export const config = {
         {
             name: 'Diner',
             modelPath: 'gltf/diner.glb',
-            environmentMap: 'hdr/environment.hdr',
+            environmentMap: 'hdr/Cracked Road HDR.hdr',
             elevationOffset: 0,
             walkableRegion: {
                 vertices: [
