@@ -132,7 +132,7 @@ export default function Scene1() {
             </Head>
             <div id="modal" className={styles.modal}>
                 <div id="modalHeader" className={styles.modalHeader}>
-                    <p id="modalTitle" className={styles.modalTitle}>MethLAB</p>
+                    <p id="modalTitle" className={styles.modalTitle}>Diner</p>
                     <button id="closeModal" className={styles.closeModal}>&times;</button>
                 </div>
                 <div id="modalBody" className={styles.modalBody}>
