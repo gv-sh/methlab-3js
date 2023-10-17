@@ -20,7 +20,7 @@ export const config = {
         shadowMapType: THREE.PCFSoftShadowMap,
         toneMapping: THREE.ACESFilmicToneMapping,
     },
-    orbitControls: false,
+    orbitControls: true,
     avatar: {
         animations: {
             idle: 0,
@@ -84,27 +84,27 @@ export const config = {
             elevationOffset: 0,
             walkableRegion: {
                 vertices: [
-                    new THREE.Vector3(-0.8, 0, -0.6),
-                    new THREE.Vector3(0.6, 0, -0.6),
-                    new THREE.Vector3(0.6, 0, 8),
-                    new THREE.Vector3(-0.8, 0, 8),
-                    new THREE.Vector3(-0.8, 0, -0.6)
+                    new THREE.Vector3(-4.5, 0, -1),
+                    new THREE.Vector3(6.2, 0, -1),
+                    new THREE.Vector3(6.2, 0, 1.5),
+                    new THREE.Vector3(-4.5, 0, 1.5),
+                    new THREE.Vector3(-4.5, 0, -1)
                 ],
                 visible: false,
                 color: 0x00ff00,
             },
             interactiveRegion: {
                 vertices: [
-                    new THREE.Vector3(-0.5, 0, 2.5),
-                    new THREE.Vector3(1, 0, 2.5),
-                    new THREE.Vector3(1, 0, 4.5),
-                    new THREE.Vector3(-0.5, 0, 4.5),
-                    new THREE.Vector3(-0.5, 0, 2.5)
+                    new THREE.Vector3(5, 0, -1),
+                    new THREE.Vector3(7, 0, -1),
+                    new THREE.Vector3(7, 0, 1),
+                    new THREE.Vector3(5, 0, 1),
+                    new THREE.Vector3(5, 0, -1)
                 ],
                 visible: false,
                 color: 0xff0000,
             },
-            bgm: 'mp3/deep-research-144798.mp3',
+            bgm: 'mp3/fun-times-together-112809.mp3',
             bgmVolume: 0.01
         }
     ],

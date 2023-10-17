@@ -25,7 +25,7 @@ export default function Scene1() {
         const camera = setupCamera(renderer);
         const composer = config.postProcessing.enabled? bloomFilter(renderer, scene, camera): null;
         const light = setupLights(scene);
-        const controls = setupOrbitControls(camera, renderer);
+        const controls = config.orbitControls ? setupOrbitControls(camera, renderer) : null;
         const sound = setupAudio(sceneName, camera);
         const updatables = [];
         const disposables = [renderer, scene, camera, composer, light, controls, sound];
