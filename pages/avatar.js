@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { config } from './config.js';
 import { isPointInsidePolygon } from './utils.js';
 
@@ -53,9 +54,15 @@ export class Avatar {
 		);
 	}
 	load() {
+		const dracoLoader = new DRACOLoader();
+		dracoLoader.setDecoderPath('../draco/');
+		this.loader.setDRACOLoader(dracoLoader);
+
 		this.loader.load(this.modelPath, (gltf) => {
 
 			if (gltf) {
+				// gltf.scene.scale.set(80, 80, 80);
+				// Traverse the model and rotate each mesh 180 degrees in Z axis
 				this.model = gltf.scene;
 			} else {
 				console.error('Error: gltf is undefined');
@@ -68,7 +75,7 @@ export class Avatar {
 
 			this.scene.add(this.model);
 
-			this.model.visible = config.avatar.visible;
+			// this.model.visible = config.avatar.visible;
 
 			// Set model to cast shadows
 			this.model.traverse(function (object) {
@@ -129,9 +136,9 @@ export class Avatar {
 
 			this.idleAction = this.mixer.clipAction(this.animations[config.avatar.animations.idle]);
 			this.walkAction = this.mixer.clipAction(this.animations[config.avatar.animations.walk]);
-			this.runAction = this.mixer.clipAction(this.animations[config.avatar.animations.run]);
+			// this.runAction = this.mixer.clipAction(this.animations[config.avatar.animations.run]);
 
-			this.actions = [this.idleAction, this.walkAction, this.runAction];
+			this.actions = [this.idleAction, this.walkAction];
 
 			this.actions[0].play();
 
@@ -336,9 +343,9 @@ export class Avatar {
 	}
 
 	update(delta) {
-        if (this.mixer) {
-            this.mixer.update(delta);
-        }
+		if (this.mixer) {
+			this.mixer.update(delta);
+		}
 	}
 
 	dispose() {
@@ -352,6 +359,6 @@ export class Avatar {
 		// Unbind key events
 		document.removeEventListener('keydown');
 		document.removeEventListener('keyup');
-		
+
 	}
 }

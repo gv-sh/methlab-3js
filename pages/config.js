@@ -20,12 +20,11 @@ export const config = {
         shadowMapType: THREE.PCFSoftShadowMap,
         toneMapping: THREE.ACESFilmicToneMapping,
     },
-    orbitControls: false,
+    orbitControls: true,
     avatar: {
         animations: {
-            idle: 0,
-            walk: 3,
-            run: 1
+            idle: 1,
+            walk: 2
         },
         skeletonHelper: false,
         speed: 0.05,
@@ -37,7 +36,7 @@ export const config = {
             minPolarAngle: Math.PI / 4,
             maxPolarAngle: Math.PI / 2
         },
-        modelPath: 'gltf/Soldier.glb',
+        modelPath: 'gltf/Walter2.glb',
         walkingSound: 'mp3/step_soundwav-14903.mp3',
         walkingSoundVolume: 0.5
     },
