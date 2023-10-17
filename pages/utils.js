@@ -104,6 +104,10 @@ export const setupScene = (sceneName, renderer) => {
         const pmremGenerator = new THREE.PMREMGenerator(renderer);
         const envMap = pmremGenerator.fromEquirectangular(texture).texture;
         scene.environment = envMap;
+
+        // Also set the background to the same texture
+        scene.background = envMap;
+        
         texture.dispose();
         pmremGenerator.dispose();
     }, undefined, (error) => {
