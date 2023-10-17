@@ -81,7 +81,7 @@ export const config = {
             name: 'Diner',
             modelPath: 'gltf/diner.glb',
             environmentMap: 'hdr/environment.hdr',
-            elevationOffset: -.25,
+            elevationOffset: 0,
             walkableRegion: {
                 vertices: [
                     new THREE.Vector3(-0.8, 0, -0.6),
