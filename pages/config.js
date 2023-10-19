@@ -20,15 +20,15 @@ export const config = {
         shadowMapType: THREE.PCFSoftShadowMap,
         toneMapping: THREE.ACESFilmicToneMapping,
     },
-    orbitControls: false,
+    orbitControls: true,
     avatar: {
         animations: {
             idle: 1,
             walk: 2
         },
         skeletonHelper: false,
-        speed: 0.05,
-        turnSpeed: 0.1,
+        speed: 0.01,
+        turnSpeed: 0.01,
         visible: true,
         orbitControls: {
             minDistance: 1.5,
@@ -59,7 +59,7 @@ export const config = {
                     new THREE.Vector3(-0.8, 0, 8),
                     new THREE.Vector3(-0.8, 0, -0.6)
                 ],
-                visible: false,
+                visible: true,
                 color: 0x00ff00,
             },
             interactiveRegion: {
@@ -70,7 +70,7 @@ export const config = {
                     new THREE.Vector3(-0.5, 0, 4.5),
                     new THREE.Vector3(-0.5, 0, 2.5)
                 ],
-                visible: false,
+                visible: true,
                 color: 0xff0000,
             },
             bgm: 'mp3/deep-research-144798.mp3',

@@ -27,6 +27,12 @@ export class Avatar {
 		this.collidableObjects = collidableObjects;
 		this.orbitControls = orbitControls;
 		this.interactiveRegion = this.sceneConfig.interactiveRegion;
+		this.keysPressed = {
+			'w': false,
+			'a': false,
+			's': false,
+			'd': false
+		};
 
 		// Set the limits to orbit controls
 		if (this.orbitControls) {
@@ -61,8 +67,6 @@ export class Avatar {
 		this.loader.load(this.modelPath, (gltf) => {
 
 			if (gltf) {
-				// gltf.scene.scale.set(80, 80, 80);
-				// Traverse the model and rotate each mesh 180 degrees in Z axis
 				this.model = gltf.scene;
 			} else {
 				console.error('Error: gltf is undefined');
@@ -297,7 +301,7 @@ export class Avatar {
 		return false;
 	}
 
-	bindKeyEvents() {
+	bindKeyEventsOld() {
 		document.addEventListener('keydown', (event) => {
 			switch (event.key.toLowerCase()) {
 				case 'w':
@@ -340,6 +344,43 @@ export class Avatar {
 					break;
 			}
 		});
+	}
+
+	bindKeyEvents() {
+        document.addEventListener('keydown', (event) => {
+            const key = event.key.toLowerCase();
+            if (key in this.keysPressed) {
+                // Step 2: Key is pressed
+                this.keysPressed[key] = true;
+
+                // Play sound if starting to walk and not already walking
+                if ((key === 'w' || key === 's') && !this.isWalking()) {
+                    this.sound.play();
+                    this.toggleWalking(true);
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            const key = event.key.toLowerCase();
+            if (key in this.keysPressed) {
+                // Step 3: Key is released
+                this.keysPressed[key] = false;
+
+                // If no movement keys are pressed, stop the walking sound
+                if (!(this.keysPressed['w'] || this.keysPressed['s'])) {
+                    this.sound.stop();
+                    this.toggleWalking(false);
+                }
+            }
+        });
+	}
+
+	updateMovement() {
+		if (this.keysPressed['w']) this.moveForward();
+        if (this.keysPressed['s']) this.moveBackward();
+        if (this.keysPressed['a']) this.turnLeft();
+        if (this.keysPressed['d']) this.turnRight();
 	}
 
 	update(delta) {

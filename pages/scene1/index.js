@@ -43,7 +43,7 @@ export default function Scene1() {
             try {
                 requestAnimationFrame(animate);
                 updatables.forEach(updatable => updatable.update(clock.getDelta()));
-
+                avatar.updateMovement();
                 renderer.render(scene, camera);
                 if (config.postProcessing.enabled) composer.render();
                 stats.update();
