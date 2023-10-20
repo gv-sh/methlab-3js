@@ -17,7 +17,6 @@ export default function Home() {
                     <li><a className={styles.link} href="/scene1">{ config.scenes[0].name } (Work in Progress)</a></li>
                     <li><a className={styles.link} href="/scene2">{ config.scenes[1].name } (Work in Progress)</a></li>
                     <li><a className={styles.link} href="/scene3">Scene 3 (Unavailable)</a></li>
-                    <li><a className={styles.link} href="/scene4">Scene 4 (Unavailable)</a></li>
                 </ul>
             </main>
         </div>
