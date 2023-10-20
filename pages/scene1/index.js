@@ -28,6 +28,7 @@ export default function Scene1() {
         const sound = setupAudio(sceneName, camera);
         const updatables = [];
         const disposables = [renderer, scene, camera, light, controls, sound];
+        let avatar;
 
         // Hot Module Replacement (HMR) - Remove this snippet to remove HMR.
         if (module.hot) {
@@ -42,7 +43,7 @@ export default function Scene1() {
             try {
                 requestAnimationFrame(animate);
                 updatables.forEach(updatable => updatable.update(clock.getDelta()));
-                avatar.updateMovement();
+                if (avatar) avatar.updateMovement();
                 renderer.render(scene, camera);
                 stats.update();
             } catch (error) {
@@ -52,7 +53,6 @@ export default function Scene1() {
 
         animate();
 
-        let avatar;
         try {
             avatar = new Avatar(sceneName, camera, scene, animate, [], controls);
             avatar.load();
@@ -65,7 +65,7 @@ export default function Scene1() {
         // Handle window resize
         window.addEventListener('resize', () => {
             renderer.setSize(window.innerWidth, window.innerHeight);
-            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.aspect  = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
         });
 
