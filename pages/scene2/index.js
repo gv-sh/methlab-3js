@@ -8,27 +8,33 @@ import Stats from 'three/addons/libs/stats.module.js';
 import { config } from '../../config.js';
 import { Avatar } from '../avatar.js';
 
-import { setupRenderer, setupScene, setupCamera, setupLights, setupOrbitControls, setupAudio, bloomFilter } from '../utils.js';
+import { setupRenderer, setupScene, setupCamera, setupLights, setupOrbitControls, setupAudio } from '../utils.js';
 
-export default function Scene1() {
+export default function Scene2() {
     const containerRef = useRef(null);
 
-    useEffect(() => {
+    useEffect(() => {        
         const clock = new THREE.Clock();
         const stats = new Stats();
-        document.body.appendChild(stats.dom);
+
+        setTimeout(() => {
+            containerRef.current.style.display = 'block';
+        }, 3000);
+
+        const container = containerRef.current;
+        container.appendChild(stats.dom);
 
         // Create a renderer
         const sceneName = config.scenes[1].name;
         const renderer = setupRenderer(containerRef);
         const scene = setupScene(sceneName, renderer);
         const camera = setupCamera(renderer);
-        const composer = config.postProcessing.enabled? bloomFilter(renderer, scene, camera): null;
         const light = setupLights(scene);
         const controls = config.orbitControls ? setupOrbitControls(camera, renderer) : null;
         const sound = setupAudio(sceneName, camera);
         const updatables = [];
-        const disposables = [renderer, scene, camera, composer, light, controls, sound];
+        const disposables = [renderer, scene, camera, light, controls, sound];
+        let avatar;
 
         // Hot Module Replacement (HMR) - Remove this snippet to remove HMR.
         if (module.hot) {
@@ -43,9 +49,8 @@ export default function Scene1() {
             try {
                 requestAnimationFrame(animate);
                 updatables.forEach(updatable => updatable.update(clock.getDelta()));
-
+                // if (avatar) avatar.updateMovement();
                 renderer.render(scene, camera);
-                if (config.postProcessing.enabled) composer.render();
                 stats.update();
             } catch (error) {
                 console.error("Error during animation: ", error);
@@ -54,7 +59,6 @@ export default function Scene1() {
 
         animate();
 
-        let avatar;
         try {
             avatar = new Avatar(sceneName, camera, scene, animate, [], controls);
             avatar.load();
@@ -67,9 +71,8 @@ export default function Scene1() {
         // Handle window resize
         window.addEventListener('resize', () => {
             renderer.setSize(window.innerWidth, window.innerHeight);
-            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.aspect  = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            composer.setSize(window.innerWidth, window.innerHeight);
         });
 
         // Add a mouse Move event 
@@ -130,9 +133,10 @@ export default function Scene1() {
             <Head>
                 <title>Diner</title>
             </Head>
+
             <div id="modal" className={styles.modal}>
                 <div id="modalHeader" className={styles.modalHeader}>
-                    <p id="modalTitle" className={styles.modalTitle}>Diner</p>
+                    <p id="modalTitle" className={styles.modalTitle}>MethLAB</p>
                     <button id="closeModal" className={styles.closeModal}>&times;</button>
                 </div>
                 <div id="modalBody" className={styles.modalBody}>
