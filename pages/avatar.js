@@ -32,7 +32,8 @@ export class Avatar {
 		this.deceleration = 0.0005; // deceleration rate, typically higher than acceleration for a more dynamic feel
 		this.velocity = 0; // current velocity, changes over time
 		this.emptyNode = new THREE.Object3D();
-		this.heading = 0;
+		this.heading = 'front';
+		this.isTurningBack = false;
 
 		this.keysPressed = {
 			'w': false,
@@ -156,13 +157,21 @@ export class Avatar {
 			this.turnBackAction = this.mixer.clipAction(this.animations[config.avatar.animations.turnBack]);
 			// this.runAction = this.mixer.clipAction(this.animations[config.avatar.animations.run]);
 
-			this.actions = [this.idleAction, this.walkAction, this.turnLeftAction, this.turnRightAction, this.turnBackAction];
+			this.actions = {
+				'idle': this.idleAction,
+				'walk': this.walkAction,
+				'turnLeft': this.turnLeftAction,
+				'turnRight': this.turnRightAction,
+				'turnBack': this.turnBackAction
+			}
 
-			this.actions[2].setLoop(THREE.LoopOnce); // turnLeft animation
-			this.actions[3].setLoop(THREE.LoopOnce); // turnRight animation
-			this.actions[4].setLoop(THREE.LoopOnce); // turnBack animation
+			this.actions['idle'].play();
+			this.heading = 'N';
 
-			this.actions[0].play();
+			// Set turn actions to loop once
+			this.actions['turnLeft'].setLoop(THREE.LoopOnce);
+			this.actions['turnRight'].setLoop(THREE.LoopOnce);
+			this.actions['turnBack'].setLoop(THREE.LoopOnce);
 
 			this.updateCamera();
 
@@ -171,167 +180,28 @@ export class Avatar {
 		});
 	}
 
-	moveForwardOld() {
-		// Create a model clone 
-		const modelClone = this.model.clone();
-		// Translate the clone forward
-		modelClone.translateZ(-config.avatar.speed);
-
-		// Get vertices in this format [{x: 1, y: 2}, {x: 3, y: 4}, ...]
-		const vertices = this.walkableRegion.vertices.map((vertex) => {
-			return { x: vertex.x, y: vertex.z };
-		});
-
-		if (this.isInTheInteractiveRegion()) {
-			console.log('You are in the interactive region');
-		}
-
-		// Check if the clone is inside the safe region
-		if (isPointInsidePolygon(
-			{ x: modelClone.position.x, y: modelClone.position.z },
-			vertices
-		)) {
-			let collisionDistance = 1;
-			this.raycaster = new THREE.Raycaster();
-
-			const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.model.quaternion);
-			this.raycaster.set(this.model.position, direction);
-
-			const intersections = this.raycaster.intersectObjects(this.collidableObjects);
-
-			if (intersections.length > 0 && intersections[0].distance < collisionDistance) {
-				console.log('Collision detected');
-				return; // Don't move the avatar forward
-			}
-
-			// If so, move the model forward
-			this.model.translateZ(-config.avatar.speed);
-		}
-
-		// this.model.translateZ(-config.avatar.speed);
-		this.updateCamera();
-	}
-
-	moveBackwardOld() {
-		// Create a model clone 
-		const modelClone = this.model.clone();
-		// Translate the clone forward
-		modelClone.translateZ(config.avatar.speed);
-
-		// Get vertices in this format [{x: 1, y: 2}, {x: 3, y: 4}, ...]
-		const vertices = this.walkableRegion.vertices.map((vertex) => {
-			return { x: vertex.x, y: vertex.z };
-		});
-
-		// Check if the clone is inside the safe region
-		if (isPointInsidePolygon(
-			{ x: modelClone.position.x, y: modelClone.position.z },
-			vertices
-		)) {
-			let collisionDistance = 1;
-			this.raycaster = new THREE.Raycaster();
-
-			const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.model.quaternion);
-			this.raycaster.set(this.model.position, direction);
-
-			const intersections = this.raycaster.intersectObjects(this.collidableObjects);
-
-			if (intersections.length > 0 && intersections[0].distance < collisionDistance) {
-				console.log('Collision detected');
-				return; // Don't move the avatar forward
-			}
-
-			// If so, move the model forward
-			this.model.translateZ(config.avatar.speed);
-		}
-
-		// this.model.translateZ(-config.avatar.speed);
-		this.updateCamera();
-	}
-
 	isWalking() {
-		return this.actions[1].isRunning();
+		return this.actions['walk'].isRunning();
 	}
+
 	toggleWalking(state) {
 		if (state) {
-			this.actions[0].stop();
-			this.actions[1].play();
+			this.actions['idle'].stop();
+			this.actions['walk'].play();
 		} else {
-			this.actions[1].stop();
-			this.actions[0].play();
+			this.actions['walk'].stop();
+			this.actions['idle'].play();
 		}
 	}
 
 
-	// turnLeft() {
-	// 	this.model.rotateY(config.avatar.turnSpeed);
-	// 	this.actions[2].play(); // actions[2] is the turnLeft animation
-	// 	this.updateCamera();
-	// }
-	// turnRight() {
-	// 	this.model.rotateY(-config.avatar.turnSpeed);
-	// 	this.actions[3].play(); // actions[3] is the turnRight animation
-	// 	this.updateCamera();
-	// }
-	// turnBack() {
-	// 	this.actions[4].play();
-	// 	this.updateCamera();
-	// }
-
-	turnLeft() {
-		// this.model.rotateY(config.avatar.turnSpeed);
-		const action = this.actions[2]; // actions[2] is the turnLeft animation
-
-		// Ensuring that the action will only play once
-		action.setLoop(THREE.LoopOnce);
-		action.play();
-
-		action.reset(); // Reset the action to ensure it starts from the beginning
-
-		action.clampWhenFinished = true; // Ensure the action stops after finishing and does not revert to the initial state
-
-		action.play();
-
-		action.addEventListener('finished', () => {
-			// handle the end of the animation if needed
-		});
-
-		this.updateCamera();
-	}
-
-	turnRight() {
-		// this.model.rotateY(-config.avatar.turnSpeed);
-		const action = this.actions[3]; // actions[3] is the turnRight animation
-
-		// Similar setup as above, ensuring the action plays once and listens for the 'finished' event
-		action.setLoop(THREE.LoopOnce);
-		action.reset();
-		action.clampWhenFinished = true;
-		action.play();
-
-		this.updateCamera();
-	}
-
-	turnBack() {
-		this
-		const action = this.actions[4]; // turnBack animation
-
-		// Same setup for this action as well
-		action.setLoop(THREE.LoopOnce);
-		action.reset();
-		action.clampWhenFinished = true;
-		action.play();
-		this.updateCamera();
-	}
-
-
-	updateCameraOld() {
+	updateCamera() {
 		// 1. Get the offset from the avatar's position.
 		// Note: The z-value is negative to position the camera behind the avatar.
-		const offset = new THREE.Vector3(0, this.followCamOffset.y, -this.followCamOffset.z);
+		const offset = new THREE.Vector3(0, this.followCamOffset.y, this.followCamOffset.z);
 
 		// 2. Adjust the offset based on the avatar's orientation
-		offset.applyQuaternion(this.model.quaternion);
+		// offset.applyQuaternion(this.model.quaternion);
 
 		// 3. Set the camera's position to the adjusted offset
 		this.followCam.position.copy(this.model.position).add(offset);
@@ -356,42 +226,6 @@ export class Avatar {
 		}
 	}
 
-	updateCamera() {
-		// Compute the bounding box of the model to find its center (used for "lookAt" later).
-		const boundingBox = new THREE.Box3().setFromObject(this.model);
-		const center = new THREE.Vector3();
-		boundingBox.getCenter(center);
-
-		// Slightly adjust the center point, so the camera looks slightly downward.
-		center.y += 0.75;
-
-		// Now, we handle the camera positioning.
-		// We want the camera to maintain its relative position to the model (like it's following from behind at a fixed distance).
-		// However, we don't want it to rotate when the model turns; we only want it to follow the model's position.
-
-		// First, calculate the desired camera position based on the avatar's position.
-		const desiredCameraPosition = new THREE.Vector3(
-			this.emptyNode.position.x,
-			this.emptyNode.position.y + this.followCamOffset.y,  // Keeping the camera at an elevation relative to the avatar
-			this.emptyNode.position.z + this.followCamOffset.z  // Keeping the camera at a fixed distance behind the avatar
-		);
-
-		// Rotate the avatar by 90
-		// this.model.rotateY(Math.PI);
-
-		// Now, set the camera's position. We're directly manipulating the camera's position without considering the avatar's rotation.
-		this.followCam.position.copy(desiredCameraPosition);
-
-		// Make the camera look at the center of the avatar.
-		this.followCam.lookAt(center);
-
-		// If using orbit controls, update the target point.
-		if (this.orbitControls) {
-			this.orbitControls.target.copy(center);
-		}
-	}
-
-
 	isInTheInteractiveRegion() {
 
 		// Get vertices in this format [{x: 1, y: 2}, {x: 3, y: 4}, ...]
@@ -410,127 +244,60 @@ export class Avatar {
 		return false;
 	}
 
-	bindKeyEventsOld() {
-		document.addEventListener('keydown', (event) => {
-			switch (event.key.toLowerCase()) {
-				case 'w':
-					// Play the sound
-					if (!this.isWalking()) {
-						this.sound.play();
-					}
-					this.toggleWalking(true);
-					this.moveForward();
-					break;
-				case 'a':
-					this.turnLeft();
-					break;
-				case 's':
-					if (!this.isWalking()) {
-						this.sound.play();
-					}
-					this.toggleWalking(true);
-					this.moveBackward();
-					break;
-				case 'd':
-					this.turnRight();
-					break;
-			}
-		});
+	async turnTo(direction) {
 
-		document.addEventListener('keyup', (event) => {
-			switch (event.key.toLowerCase()) {
-				case 'w':
-					this.sound.stop();
-					this.toggleWalking(false);
-					break;
-				case 'a':
-					break;
-				case 's':
-					this.sound.stop();
-					this.toggleWalking(false);
-					break;
-				case 'd':
-					break;
-			}
-		});
-	}
-
-	bindKeyEvents() {
-		document.addEventListener('keydown', (event) => {
-			const key = event.key.toLowerCase();
-			if (key in this.keysPressed) {
-				// Step 2: Key is pressed
-				this.keysPressed[key] = true;
-
-				// Play sound if starting to walk and not already walking
-				if ((key === 'w') && !this.isWalking()) {
-					this.sound.play();
-					this.toggleWalking(true);
-				}
-			}
-		});
-
-		document.addEventListener('keyup', (event) => {
-			const key = event.key.toLowerCase();
-			if (key in this.keysPressed) {
-				// Step 3: Key is released
-				this.keysPressed[key] = false;
-
-				// If no movement keys are pressed, stop the walking sound
-				if (!(this.keysPressed['w'])) {
-					this.sound.stop();
-					this.toggleWalking(false);
-				}
-			}
-
-			// If key is 's', turn back
-			if (key === 's') {
-				this.turnBack();
-			}
-		});
-	}
-
-	updateMovementOld() {
-		if (this.keysPressed['w']) this.moveForward();
-		if (this.keysPressed['a']) this.turnLeft();
-		if (this.keysPressed['d']) this.turnRight();
-	}
-
-	updateMovement() {
-		let isMoving = false;
-
-		if (this.keysPressed['w']) {
-			this.velocity += this.acceleration; // increase the velocity (ease-in)
-			isMoving = true;
+		// Define the action based on the direction parameter, e.g., this.actions[direction] 
+		const action = this.actions[direction];
+		if (!action) {
+			console.error('Invalid direction');
+			return;
 		}
 
-		if (isMoving) {
-			// clamp the velocity to ensure it doesn't exceed the maximum speed
-			this.velocity = Math.max(-this.maxSpeed, Math.min(this.velocity, this.maxSpeed));
-		} else {
-			// apply deceleration (ease-out) when no keys are pressed
-			if (this.velocity > 0) {
-				this.velocity = Math.max(0, this.velocity - this.deceleration);
-			} else {
-				this.velocity = Math.min(0, this.velocity + this.deceleration);
+		// Similar to your current turn functions
+		// Stop other actions, configure the turn animation, and play it
+		Object.values(this.actions).forEach(a => {
+			if (a.isRunning() && a !== action) {
+				a.stop();
 			}
-		}
+		});
 
-		// Then, you'd replace your direct translation method with a velocity-based one
-		if (this.velocity !== 0) {
-			this.translateAvatarZ(-this.velocity); // where translateAvatarZ() is your new movement logic, see below
-			// Calculate model center position using its bounding box
-			const boundingBox = new THREE.Box3().setFromObject(this.model);
-			const center = new THREE.Vector3();
-			boundingBox.getCenter(center);
-			// Set the empty node position to the model center
-			this.emptyNode.position.copy(center);
-		}
+		action.reset().setEffectiveTimeScale(3).setEffectiveWeight(1.5).fadeIn(0.5);
 
-		// ... handle left/right movement as before ... 
-		if (this.keysPressed['a']) this.turnLeft();
-		if (this.keysPressed['d']) this.turnRight();
-		if (this.keysPressed['s']) this.turnBack();
+
+		action.clampWhenFinished = false;
+
+		// Play the animation
+		action.play();
+
+		// Wait for the turn animation to complete (using your existing promise-based approach)
+		await this.whenAnimationFinished(action);
+
+		switch (direction) {
+			case 'turnLeft':
+				this.model.rotateY(Math.PI / 2);
+				console.log('turning left');
+				break;
+			case 'turnRight':
+				this.model.rotateY(-Math.PI / 2);
+				console.log('turning right');
+				break;
+			case 'turnBack':
+				this.model.rotateY(Math.PI);
+				console.log('turning back');
+				break;
+		}
+	}
+
+	whenAnimationFinished(action) {
+		return new Promise(resolve => {
+			// This assumes your 'action' or 'mixer' instance emits 'finished' when done.
+			const finishCallback = () => {
+				action.getMixer().removeEventListener('finished', finishCallback);
+				resolve();
+			};
+
+			action.getMixer().addEventListener('finished', finishCallback);
+		});
 	}
 
 	translateAvatarZ(amount) {
@@ -574,6 +341,129 @@ export class Avatar {
 		this.updateCamera();
 	}
 
+	bindKeyEvents() {
+		// Add event listeners for keydown and keyup events.
+		window.addEventListener('keydown', (event) => this.handleKeyDown(event));
+		window.addEventListener('keyup', (event) => this.handleKeyUp(event));
+	}
+
+	findDirectionDifference(newDirection) {
+		// Given current heading as N, E, W, S, NE, NW, SE, SW
+		// newDirection is the direction the avatar is turning to
+		// Find the difference between the two directions in terms of angle in radians
+
+		const directionMapping = {
+			'N': 0,
+			'E': 90,
+			'W': -90,
+			'S': 180,
+			'NE': 45,
+			'NW': -45,
+			'SE': 135,
+			'SW': -135
+		}
+
+		const currentDirection = this.heading;
+
+		const currentDirectionAngle = directionMapping[currentDirection];
+
+		const newDirectionAngle = directionMapping[newDirection];
+
+		const difference = newDirectionAngle - currentDirectionAngle;
+
+		return difference;
+	}
+
+	findRequiredTurn(newDirection) {
+		let difference = this.findDirectionDifference(newDirection);
+		console.log('difference ' + difference);
+
+		if (difference === 0) {
+			return null;
+		} else if (difference === 90) {
+			return 'turnRight';
+		} else if (difference === -90) {
+			return 'turnLeft';
+		} else if (difference === 90) {
+			return 'turnBack';
+		} else if (difference === 45) {
+			return 'turnRight';
+		} else if (difference === -45) {
+			return 'turnLeft';
+		} else if (difference === 135) {
+			return 'turnRight';
+		} else if (difference === -135) {
+			return 'turnLeft';
+		} else if (difference === 180) {
+			return 'turnBack';
+		} else if (difference === -180) {
+			return 'turnBack';
+		} else if (difference === 270) {
+			return 'turnLeft';
+		} else if (difference === -270) {
+			return 'turnRight';
+		}
+
+		return null;
+	}
+
+	handleKeyDown(event) {
+		// When a key is pressed, set the corresponding state to true
+		const key = event.key.toLowerCase();
+		this.keysPressed[key] = true;
+		let newDirection = null;
+		// Find the current rotation of the model
+		switch (key) {
+			case 'w':
+				newDirection = 'N';
+				break;
+			case 'a':
+				newDirection = 'W';
+				break;
+			case 's':
+				newDirection = 'S';
+				break;
+			case 'd':
+				newDirection = 'E';
+				break;
+		}
+
+		// Find the required turn
+		const requiredTurn = this.findRequiredTurn(newDirection);
+		console.log('required turn ' + requiredTurn);
+
+		if (requiredTurn) {
+			this.turnTo(requiredTurn);
+			this.heading = newDirection;
+			console.log('turning to ' + newDirection);
+		}
+
+		// After animation completes, set the heading and potentially initiate walking
+		if (this.keysPressed['w'] || this.keysPressed['a'] || this.keysPressed['s'] || this.keysPressed['d']) {
+
+			if (!this.isWalking()) {
+				this.sound.play();
+			}
+
+			this.toggleWalking(true);
+			this.translateAvatarZ(-config.avatar.speed);
+		}
+
+	}
+
+	handleKeyUp(event) {
+		// When a key is released, set the corresponding state to false
+		this.keysPressed[event.key.toLowerCase()] = false;
+
+		// Additional logic when keys are released can be added here
+		// For example, you might stop the walking animation when movement keys are released
+
+		// If no movement keys are pressed, stop the walking sound
+		if (!(this.keysPressed['w'] || this.keysPressed['a'] || this.keysPressed['s'] || this.keysPressed['d'])) {
+			this.sound.stop();
+			this.toggleWalking(false);
+		}
+	}
 
 	update(delta) {
 		if (this.mixer) {

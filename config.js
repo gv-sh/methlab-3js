@@ -30,7 +30,7 @@ export const config = {
             walking: 5
         },
         skeletonHelper: false,
-        speed: 0.01,
+        speed: 0.04,
         turnSpeed: 0.01,
         visible: true,
         orbitControls: {

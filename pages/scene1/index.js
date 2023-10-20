@@ -16,7 +16,13 @@ export default function Scene1() {
     useEffect(() => {        
         const clock = new THREE.Clock();
         const stats = new Stats();
-        document.body.appendChild(stats.dom);
+
+        setTimeout(() => {
+            containerRef.current.style.display = 'block';
+        }, 3000);
+
+        const container = containerRef.current;
+        container.appendChild(stats.dom);
 
         // Create a renderer
         const sceneName = config.scenes[0].name;
@@ -43,7 +49,7 @@ export default function Scene1() {
             try {
                 requestAnimationFrame(animate);
                 updatables.forEach(updatable => updatable.update(clock.getDelta()));
-                if (avatar) avatar.updateMovement();
+                // if (avatar) avatar.updateMovement();
                 renderer.render(scene, camera);
                 stats.update();
             } catch (error) {

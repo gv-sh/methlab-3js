@@ -1,5 +1,6 @@
 .mainCanvas {
   margin: 0;
+  display: none;
 }
 
 .main, .container {
