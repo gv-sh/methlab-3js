@@ -32,6 +32,7 @@ export class Avatar {
 		this.deceleration = 0.0005; // deceleration rate, typically higher than acceleration for a more dynamic feel
 		this.velocity = 0; // current velocity, changes over time
 		this.emptyNode = new THREE.Object3D();
+		this.heading = 0;
 
 		this.keysPressed = {
 			'w': false,
@@ -149,10 +150,17 @@ export class Avatar {
 			this.mixer = new THREE.AnimationMixer(this.model);
 
 			this.idleAction = this.mixer.clipAction(this.animations[config.avatar.animations.idle]);
-			this.walkAction = this.mixer.clipAction(this.animations[config.avatar.animations.walk]);
+			this.walkAction = this.mixer.clipAction(this.animations[config.avatar.animations.walking]);
+			this.turnLeftAction = this.mixer.clipAction(this.animations[config.avatar.animations.turnLeft]);
+			this.turnRightAction = this.mixer.clipAction(this.animations[config.avatar.animations.turnRight]);
+			this.turnBackAction = this.mixer.clipAction(this.animations[config.avatar.animations.turnBack]);
 			// this.runAction = this.mixer.clipAction(this.animations[config.avatar.animations.run]);
 
-			this.actions = [this.idleAction, this.walkAction];
+			this.actions = [this.idleAction, this.walkAction, this.turnLeftAction, this.turnRightAction, this.turnBackAction];
+
+			this.actions[2].setLoop(THREE.LoopOnce); // turnLeft animation
+			this.actions[3].setLoop(THREE.LoopOnce); // turnRight animation
+			this.actions[4].setLoop(THREE.LoopOnce); // turnBack animation
 
 			this.actions[0].play();
 
@@ -255,18 +263,67 @@ export class Avatar {
 	}
 
 
+	// turnLeft() {
+	// 	this.model.rotateY(config.avatar.turnSpeed);
+	// 	this.actions[2].play(); // actions[2] is the turnLeft animation
+	// 	this.updateCamera();
+	// }
+	// turnRight() {
+	// 	this.model.rotateY(-config.avatar.turnSpeed);
+	// 	this.actions[3].play(); // actions[3] is the turnRight animation
+	// 	this.updateCamera();
+	// }
+	// turnBack() {
+	// 	this.actions[4].play();
+	// 	this.updateCamera();
+	// }
+
 	turnLeft() {
-		this.model.rotateY(config.avatar.turnSpeed);
+		// this.model.rotateY(config.avatar.turnSpeed);
+		const action = this.actions[2]; // actions[2] is the turnLeft animation
+
+		// Ensuring that the action will only play once
+		action.setLoop(THREE.LoopOnce);
+		action.play();
+
+		action.reset(); // Reset the action to ensure it starts from the beginning
+
+		action.clampWhenFinished = true; // Ensure the action stops after finishing and does not revert to the initial state
+
+		action.play();
+
+		action.addEventListener('finished', () => {
+			// handle the end of the animation if needed
+		});
+
 		this.updateCamera();
 	}
+
 	turnRight() {
-		this.model.rotateY(-config.avatar.turnSpeed);
+		// this.model.rotateY(-config.avatar.turnSpeed);
+		const action = this.actions[3]; // actions[3] is the turnRight animation
+
+		// Similar setup as above, ensuring the action plays once and listens for the 'finished' event
+		action.setLoop(THREE.LoopOnce);
+		action.reset();
+		action.clampWhenFinished = true;
+		action.play();
+
 		this.updateCamera();
 	}
+
 	turnBack() {
-		this.model.rotateY(Math.PI);
+		this
+		const action = this.actions[4]; // turnBack animation
+
+		// Same setup for this action as well
+		action.setLoop(THREE.LoopOnce);
+		action.reset();
+		action.clampWhenFinished = true;
+		action.play();
 		this.updateCamera();
 	}
+
 
 	updateCameraOld() {
 		// 1. Get the offset from the avatar's position.
@@ -298,42 +355,42 @@ export class Avatar {
 			this.orbitControls.target.copy(center);
 		}
 	}
-	
+
 	updateCamera() {
 		// Compute the bounding box of the model to find its center (used for "lookAt" later).
 		const boundingBox = new THREE.Box3().setFromObject(this.model);
 		const center = new THREE.Vector3();
 		boundingBox.getCenter(center);
-	
+
 		// Slightly adjust the center point, so the camera looks slightly downward.
 		center.y += 0.75;
-	
+
 		// Now, we handle the camera positioning.
 		// We want the camera to maintain its relative position to the model (like it's following from behind at a fixed distance).
 		// However, we don't want it to rotate when the model turns; we only want it to follow the model's position.
-	
+
 		// First, calculate the desired camera position based on the avatar's position.
 		const desiredCameraPosition = new THREE.Vector3(
-			this.emptyNode.position.x, 
+			this.emptyNode.position.x,
 			this.emptyNode.position.y + this.followCamOffset.y,  // Keeping the camera at an elevation relative to the avatar
 			this.emptyNode.position.z + this.followCamOffset.z  // Keeping the camera at a fixed distance behind the avatar
 		);
 
 		// Rotate the avatar by 90
 		// this.model.rotateY(Math.PI);
-	
+
 		// Now, set the camera's position. We're directly manipulating the camera's position without considering the avatar's rotation.
 		this.followCam.position.copy(desiredCameraPosition);
-	
+
 		// Make the camera look at the center of the avatar.
 		this.followCam.lookAt(center);
-	
+
 		// If using orbit controls, update the target point.
 		if (this.orbitControls) {
 			this.orbitControls.target.copy(center);
 		}
 	}
-	
+
 
 	isInTheInteractiveRegion() {
 

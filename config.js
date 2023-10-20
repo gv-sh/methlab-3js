@@ -24,7 +24,10 @@ export const config = {
     avatar: {
         animations: {
             idle: 1,
-            walk: 2
+            turnLeft: 2,
+            turnRight: 3,
+            turnBack: 4,
+            walking: 5
         },
         skeletonHelper: false,
         speed: 0.01,
@@ -36,7 +39,7 @@ export const config = {
             minPolarAngle: Math.PI / 4,
             maxPolarAngle: Math.PI / 2
         },
-        modelPath: 'gltf/Walter2.glb',
+        modelPath: 'gltf/Walter3.glb',
         walkingSound: 'mp3/step_soundwav-14903.mp3',
         walkingSoundVolume: 0.5
     },
