@@ -4,48 +4,8 @@ import { config } from './config.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-
-import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
-
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-
-export function isPointInsidePolygon(point, vertices) {
-    let intersections = 0;
-
-    for (let i = 0; i < vertices.length; i++) {
-        const vertex1 = vertices[i];
-        const vertex2 = vertices[(i + 1) % vertices.length];  // This ensures the last point connects to the first
-
-        // Check if point is on an horizontal boundary
-        if (vertex1.y === point.y && vertex2.y === point.y && point.x > Math.min(vertex1.x, vertex2.x) && point.x < Math.max(vertex1.x, vertex2.x)) {
-            return true;
-        }
-
-        // Check if point is on a vertex
-        if (point.x === vertex1.x && point.y === vertex1.y) {
-            return true;
-        }
-
-        // Check if ray is intersecting edge (excluding endpoints)
-        if (point.y > Math.min(vertex1.y, vertex2.y) && point.y <= Math.max(vertex1.y, vertex2.y) && point.x <= Math.max(vertex1.x, vertex2.x) && vertex1.y !== vertex2.y) {
-            const xinters = (point.y - vertex1.y) * (vertex2.x - vertex1.x) / (vertex2.y - vertex1.y) + vertex1.x;
-            if (xinters === point.x) {  // Check if point is on the polygon boundary (other than horizontal)
-                return true;
-            }
-            if (vertex1.x === vertex2.x || point.x <= xinters) {
-                intersections++;
-            }
-        }
-    }
-
-    // If the number of edges we passed through is odd, then it's in the polygon.
-    return intersections % 2 !== 0;
-}
 
 export const setupRenderer = (containerRef) => {
     const renderer = new THREE.WebGLRenderer({
@@ -59,29 +19,6 @@ export const setupRenderer = (containerRef) => {
     renderer.toneMappingExposure = 1.0;
 
     return renderer;
-}
-
-export const bokehFilter = (renderer, scene, camera) => {
-    var composer;
-    if (config.bokehPass) {
-        // Create an EffectComposer for post-processing
-        composer = new EffectComposer(renderer);
-
-        // Create a RenderPass to render the scene
-        const renderPass = new RenderPass(scene, camera);
-        composer.addPass(renderPass);
-
-        // Create a BokehPass for depth of field
-        const bokehPass = new BokehPass(scene, camera, {
-            focus: 0.25, // Focus distance (0.0 for near, 1.0 for far)
-            aperture: 0.01, // Aperture size (adjust this value for different levels of blur)
-            maxblur: 0.001, // Maximum blur strength
-        });
-
-        composer.addPass(bokehPass);
-    }
-
-    return composer;
 }
 
 export const setupScene = (sceneName, renderer) => {
@@ -204,22 +141,3 @@ export const setupAudio = (sceneName, camera) => {
 
     return sound;
 };
-
-export const bloomFilter = (renderer, scene, camera) => {
-    let composer;
-    const renderScene = new RenderPass(scene, camera);
-
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-    bloomPass.threshold = config.postProcessing.bloomParams.threshold;
-    bloomPass.strength = config.postProcessing.bloomParams.strength;
-    bloomPass.radius = config.postProcessing.bloomParams.radius;
-
-    const outputPass = new OutputPass();
-
-    composer = new EffectComposer(renderer);
-    composer.addPass(renderScene);
-    composer.addPass(bloomPass);
-    composer.addPass(outputPass);
-
-    return composer;
-}

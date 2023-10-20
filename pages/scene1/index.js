@@ -8,15 +8,11 @@ import Stats from 'three/addons/libs/stats.module.js';
 import { config } from '../config.js';
 import { Avatar } from '../avatar.js';
 
-import { setupRenderer, setupScene, setupCamera, setupLights, setupOrbitControls, setupAudio, bloomFilter } from '../utils.js';
-
-
-
+import { setupRenderer, setupScene, setupCamera, setupLights, setupOrbitControls, setupAudio } from '../utils.js';
 
 export default function Scene1() {
     const containerRef = useRef(null);
 
-    
     useEffect(() => {        
         const clock = new THREE.Clock();
         const stats = new Stats();
@@ -27,12 +23,11 @@ export default function Scene1() {
         const renderer = setupRenderer(containerRef);
         const scene = setupScene(sceneName, renderer);
         const camera = setupCamera(renderer);
-        const composer = config.postProcessing.enabled ? bloomFilter(renderer, scene, camera) : null;
         const light = setupLights(scene);
         const controls = config.orbitControls ? setupOrbitControls(camera, renderer) : null;
         const sound = setupAudio(sceneName, camera);
         const updatables = [];
-        const disposables = [renderer, scene, camera, composer, light, controls, sound];
+        const disposables = [renderer, scene, camera, light, controls, sound];
 
         // Hot Module Replacement (HMR) - Remove this snippet to remove HMR.
         if (module.hot) {
@@ -49,7 +44,6 @@ export default function Scene1() {
                 updatables.forEach(updatable => updatable.update(clock.getDelta()));
                 avatar.updateMovement();
                 renderer.render(scene, camera);
-                if (config.postProcessing.enabled) composer.render();
                 stats.update();
             } catch (error) {
                 console.error("Error during animation: ", error);
@@ -73,7 +67,6 @@ export default function Scene1() {
             renderer.setSize(window.innerWidth, window.innerHeight);
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            composer.setSize(window.innerWidth, window.innerHeight);
         });
 
         // Add a mouse Move event 
