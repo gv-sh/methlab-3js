@@ -5,7 +5,7 @@ import styles from '../../styles/styles.module.css';
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 
-import { config } from '../config.js';
+import { config } from '../../config.js';
 import { Avatar } from '../avatar.js';
 
 import { setupRenderer, setupScene, setupCamera, setupLights, setupOrbitControls, setupAudio } from '../utils.js';

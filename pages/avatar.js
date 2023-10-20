@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { config } from './config.js';
+import { config } from '../config.js';
 import { isPointInsidePolygon } from '../utils/math.js';
 
 export class Avatar {

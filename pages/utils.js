@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { config } from './config.js';
+import { config } from '../config.js';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';

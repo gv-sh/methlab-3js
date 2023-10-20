@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import Head from 'next/head';
 import styles from '../styles/styles.module.css';
-import { config } from './config.js';
+import { config } from '../config.js';
 
 export default function Home() { 
     return (
