@@ -31,8 +31,8 @@ export const config = {
         turnSpeed: 0.01,
         visible: true,
         orbitControls: {
-            minDistance: 1.5,
-            maxDistance: 3,
+            minDistance: 2,
+            maxDistance: 2,
             minPolarAngle: Math.PI / 4,
             maxPolarAngle: Math.PI / 2
         },

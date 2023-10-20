@@ -27,6 +27,12 @@ export class Avatar {
 		this.collidableObjects = collidableObjects;
 		this.orbitControls = orbitControls;
 		this.interactiveRegion = this.sceneConfig.interactiveRegion;
+		this.maxSpeed = 0.01; // or whatever maximum speed you find appropriate
+		this.acceleration = 0.0001; // acceleration rate
+		this.deceleration = 0.0005; // deceleration rate, typically higher than acceleration for a more dynamic feel
+		this.velocity = 0; // current velocity, changes over time
+		this.emptyNode = new THREE.Object3D();
+
 		this.keysPressed = {
 			'w': false,
 			'a': false,
@@ -73,11 +79,15 @@ export class Avatar {
 			}
 
 			this.boundingBox = new THREE.Box3().setFromObject(this.model);
+			this.emptyNode.position.copy(this.boundingBox.getCenter(new THREE.Vector3()));
 
 			// Rotate the avatar 180 degrees
 			this.model.rotateY(Math.PI);
 
 			this.scene.add(this.model);
+
+			// Add the empty node to the scene
+			this.scene.add(this.emptyNode);
 
 			// this.model.visible = config.avatar.visible;
 
@@ -153,7 +163,7 @@ export class Avatar {
 		});
 	}
 
-	moveForward() {
+	moveForwardOld() {
 		// Create a model clone 
 		const modelClone = this.model.clone();
 		// Translate the clone forward
@@ -194,21 +204,7 @@ export class Avatar {
 		this.updateCamera();
 	}
 
-
-	isWalking() {
-		return this.actions[1].isRunning();
-	}
-	toggleWalking(state) {
-		if (state) {
-			this.actions[0].stop();
-			this.actions[1].play();
-		} else {
-			this.actions[1].stop();
-			this.actions[0].play();
-		}
-	}
-
-	moveBackward() {
+	moveBackwardOld() {
 		// Create a model clone 
 		const modelClone = this.model.clone();
 		// Translate the clone forward
@@ -244,6 +240,21 @@ export class Avatar {
 		// this.model.translateZ(-config.avatar.speed);
 		this.updateCamera();
 	}
+
+	isWalking() {
+		return this.actions[1].isRunning();
+	}
+	toggleWalking(state) {
+		if (state) {
+			this.actions[0].stop();
+			this.actions[1].play();
+		} else {
+			this.actions[1].stop();
+			this.actions[0].play();
+		}
+	}
+
+
 	turnLeft() {
 		this.model.rotateY(config.avatar.turnSpeed);
 		this.updateCamera();
@@ -252,7 +263,12 @@ export class Avatar {
 		this.model.rotateY(-config.avatar.turnSpeed);
 		this.updateCamera();
 	}
-	updateCamera() {
+	turnBack() {
+		this.model.rotateY(Math.PI/2);
+		this.updateCamera();
+	}
+
+	updateCameraOld() {
 		// 1. Get the offset from the avatar's position.
 		// Note: The z-value is negative to position the camera behind the avatar.
 		const offset = new THREE.Vector3(0, this.followCamOffset.y, -this.followCamOffset.z);
@@ -282,6 +298,42 @@ export class Avatar {
 			this.orbitControls.target.copy(center);
 		}
 	}
+	
+	updateCamera() {
+		// Compute the bounding box of the model to find its center (used for "lookAt" later).
+		const boundingBox = new THREE.Box3().setFromObject(this.model);
+		const center = new THREE.Vector3();
+		boundingBox.getCenter(center);
+	
+		// Slightly adjust the center point, so the camera looks slightly downward.
+		center.y += 0.75;
+	
+		// Now, we handle the camera positioning.
+		// We want the camera to maintain its relative position to the model (like it's following from behind at a fixed distance).
+		// However, we don't want it to rotate when the model turns; we only want it to follow the model's position.
+	
+		// First, calculate the desired camera position based on the avatar's position.
+		const desiredCameraPosition = new THREE.Vector3(
+			this.emptyNode.position.x, 
+			this.emptyNode.position.y + this.followCamOffset.y,  // Keeping the camera at an elevation relative to the avatar
+			this.emptyNode.position.z + this.followCamOffset.z  // Keeping the camera at a fixed distance behind the avatar
+		);
+
+		// Rotate the avatar by 90
+		// this.model.rotateY(Math.PI);
+	
+		// Now, set the camera's position. We're directly manipulating the camera's position without considering the avatar's rotation.
+		this.followCam.position.copy(desiredCameraPosition);
+	
+		// Make the camera look at the center of the avatar.
+		this.followCam.lookAt(center);
+	
+		// If using orbit controls, update the target point.
+		if (this.orbitControls) {
+			this.orbitControls.target.copy(center);
+		}
+	}
+	
 
 	isInTheInteractiveRegion() {
 
@@ -347,41 +399,120 @@ export class Avatar {
 	}
 
 	bindKeyEvents() {
-        document.addEventListener('keydown', (event) => {
-            const key = event.key.toLowerCase();
-            if (key in this.keysPressed) {
-                // Step 2: Key is pressed
-                this.keysPressed[key] = true;
+		document.addEventListener('keydown', (event) => {
+			const key = event.key.toLowerCase();
+			if (key in this.keysPressed) {
+				// Step 2: Key is pressed
+				this.keysPressed[key] = true;
 
-                // Play sound if starting to walk and not already walking
-                if ((key === 'w' || key === 's') && !this.isWalking()) {
-                    this.sound.play();
-                    this.toggleWalking(true);
-                }
-            }
-        });
+				// Play sound if starting to walk and not already walking
+				if ((key === 'w') && !this.isWalking()) {
+					this.sound.play();
+					this.toggleWalking(true);
+				}
+			}
+		});
 
-        document.addEventListener('keyup', (event) => {
-            const key = event.key.toLowerCase();
-            if (key in this.keysPressed) {
-                // Step 3: Key is released
-                this.keysPressed[key] = false;
+		document.addEventListener('keyup', (event) => {
+			const key = event.key.toLowerCase();
+			if (key in this.keysPressed) {
+				// Step 3: Key is released
+				this.keysPressed[key] = false;
 
-                // If no movement keys are pressed, stop the walking sound
-                if (!(this.keysPressed['w'] || this.keysPressed['s'])) {
-                    this.sound.stop();
-                    this.toggleWalking(false);
-                }
-            }
-        });
+				// If no movement keys are pressed, stop the walking sound
+				if (!(this.keysPressed['w'])) {
+					this.sound.stop();
+					this.toggleWalking(false);
+				}
+			}
+		});
+	}
+
+	updateMovementOld() {
+		if (this.keysPressed['w']) this.moveForward();
+		if (this.keysPressed['s']) this.turnBack();
+		if (this.keysPressed['a']) this.turnLeft();
+		if (this.keysPressed['d']) this.turnRight();
 	}
 
 	updateMovement() {
-		if (this.keysPressed['w']) this.moveForward();
-        if (this.keysPressed['s']) this.moveBackward();
-        if (this.keysPressed['a']) this.turnLeft();
-        if (this.keysPressed['d']) this.turnRight();
+		let isMoving = false;
+
+		if (this.keysPressed['w']) {
+			this.velocity += this.acceleration; // increase the velocity (ease-in)
+			isMoving = true;
+		}
+
+		if (isMoving) {
+			// clamp the velocity to ensure it doesn't exceed the maximum speed
+			this.velocity = Math.max(-this.maxSpeed, Math.min(this.velocity, this.maxSpeed));
+		} else {
+			// apply deceleration (ease-out) when no keys are pressed
+			if (this.velocity > 0) {
+				this.velocity = Math.max(0, this.velocity - this.deceleration);
+			} else {
+				this.velocity = Math.min(0, this.velocity + this.deceleration);
+			}
+		}
+
+		// Then, you'd replace your direct translation method with a velocity-based one
+		if (this.velocity !== 0) {
+			this.translateAvatarZ(-this.velocity); // where translateAvatarZ() is your new movement logic, see below
+			// Calculate model center position using its bounding box
+			const boundingBox = new THREE.Box3().setFromObject(this.model);
+			const center = new THREE.Vector3();
+			boundingBox.getCenter(center);
+			// Set the empty node position to the model center
+			this.emptyNode.position.copy(center);
+		}
+
+		// ... handle left/right movement as before ... 
+		if (this.keysPressed['a']) this.turnLeft();
+		if (this.keysPressed['d']) this.turnRight();
+		if (this.keysPressed['s']) this.turnBack();
 	}
+
+	translateAvatarZ(amount) {
+		// Create a model clone 
+		const modelClone = this.model.clone();
+		// Translate the clone forward
+		modelClone.translateZ(amount);
+
+		// Get vertices in this format [{x: 1, y: 2}, {x: 3, y: 4}, ...]
+		const vertices = this.walkableRegion.vertices.map((vertex) => {
+			return { x: vertex.x, y: vertex.z };
+		});
+
+		if (this.isInTheInteractiveRegion()) {
+			console.log('You are in the interactive region');
+		}
+
+		// Check if the clone is inside the safe region
+		if (isPointInsidePolygon(
+			{ x: modelClone.position.x, y: modelClone.position.z },
+			vertices
+		)) {
+			let collisionDistance = 1;
+			this.raycaster = new THREE.Raycaster();
+
+			const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.model.quaternion);
+			this.raycaster.set(this.model.position, direction);
+
+			const intersections = this.raycaster.intersectObjects(this.collidableObjects);
+
+			if (intersections.length > 0 && intersections[0].distance < collisionDistance) {
+				console.log('Collision detected');
+				return; // Don't move the avatar forward
+			}
+
+			// If so, move the model forward
+			this.model.translateZ(amount);
+		}
+
+		// this.model.translateZ(-config.avatar.speed);
+		this.updateCamera();
+	}
+
 
 	update(delta) {
 		if (this.mixer) {

@@ -162,7 +162,7 @@ export const setupLights = (scene) => {
     // Diffuse light
     light.position.set(0, 5, 0);
     light.castShadow = true;
-    scene.add(light);
+    // scene.add(light);
     return light;
 }
 

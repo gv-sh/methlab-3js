@@ -10,10 +10,14 @@ import { Avatar } from '../avatar.js';
 
 import { setupRenderer, setupScene, setupCamera, setupLights, setupOrbitControls, setupAudio, bloomFilter } from '../utils.js';
 
+
+
+
 export default function Scene1() {
     const containerRef = useRef(null);
 
-    useEffect(() => {
+    
+    useEffect(() => {        
         const clock = new THREE.Clock();
         const stats = new Stats();
         document.body.appendChild(stats.dom);
@@ -23,7 +27,7 @@ export default function Scene1() {
         const renderer = setupRenderer(containerRef);
         const scene = setupScene(sceneName, renderer);
         const camera = setupCamera(renderer);
-        const composer = config.postProcessing.enabled? bloomFilter(renderer, scene, camera): null;
+        const composer = config.postProcessing.enabled ? bloomFilter(renderer, scene, camera) : null;
         const light = setupLights(scene);
         const controls = config.orbitControls ? setupOrbitControls(camera, renderer) : null;
         const sound = setupAudio(sceneName, camera);
@@ -130,6 +134,7 @@ export default function Scene1() {
             <Head>
                 <title>MethLAB</title>
             </Head>
+
             <div id="modal" className={styles.modal}>
                 <div id="modalHeader" className={styles.modalHeader}>
                     <p id="modalTitle" className={styles.modalTitle}>MethLAB</p>
