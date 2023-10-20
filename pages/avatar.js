@@ -264,7 +264,7 @@ export class Avatar {
 		this.updateCamera();
 	}
 	turnBack() {
-		this.model.rotateY(Math.PI/2);
+		this.model.rotateY(Math.PI);
 		this.updateCamera();
 	}
 
@@ -425,12 +425,16 @@ export class Avatar {
 					this.toggleWalking(false);
 				}
 			}
+
+			// If key is 's', turn back
+			if (key === 's') {
+				this.turnBack();
+			}
 		});
 	}
 
 	updateMovementOld() {
 		if (this.keysPressed['w']) this.moveForward();
-		if (this.keysPressed['s']) this.turnBack();
 		if (this.keysPressed['a']) this.turnLeft();
 		if (this.keysPressed['d']) this.turnRight();
 	}
