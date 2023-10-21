@@ -46,7 +46,9 @@ export const config = {
     camera: {
         fov: 80,
         near: 0.35,
-        far: 20
+        far: 20,
+        lerpFactor: 0.2, // Determines how quickly the camera follows: lower is slower
+        lookAtLerpFactor: 0.5, // Determines how quickly the camera looks at the target: lower is slower
     },
     scenes: [
         {

@@ -27,10 +27,6 @@ export class Avatar {
 		this.collidableObjects = collidableObjects;
 		this.orbitControls = orbitControls;
 		this.interactiveRegion = this.sceneConfig.interactiveRegion;
-		this.maxSpeed = 0.01; // or whatever maximum speed you find appropriate
-		this.acceleration = 0.0001; // acceleration rate
-		this.deceleration = 0.0005; // deceleration rate, typically higher than acceleration for a more dynamic feel
-		this.velocity = 0; // current velocity, changes over time
 		this.emptyNode = new THREE.Object3D();
 		this.heading = 'front';
 		this.isTurningBack = false;
@@ -38,8 +34,8 @@ export class Avatar {
 		this.instructionQueue = [];
 		this.isProcessingQueue = false;
 
-		this.cameraLerpFactor = 0.08;  // Determines how quickly the camera follows: lower is slower
-		this.lookAtLerpFactor = 0.25;  // Determines how quickly the camera looks at the target: lower is slower
+		this.cameraLerpFactor = config.camera.lerpFactor;  
+		this.lookAtLerpFactor = config.camera.lookAtLerpFactor;  
 		this.targetPosition = new THREE.Vector3();  // The position the camera is moving towards
 		this.targetLookAt = new THREE.Vector3();  // The point the camera is looking towards
 
@@ -398,7 +394,7 @@ export class Avatar {
 		// Stop other actions, configure the turn animation, and play it
 		Object.values(this.actions).forEach(a => {
 			if (a.isRunning() && a !== action) {
-				a.stop();
+				a.fadeOut(0.2);
 			}
 		});
 
@@ -438,7 +434,7 @@ export class Avatar {
 			return;
 		}
 
-		idleAction.reset().setEffectiveTimeScale(1).setEffectiveWeight(1);
+		idleAction.reset().setEffectiveTimeScale(1).setEffectiveWeight(1)
 		idleAction.play();
 	}
 
