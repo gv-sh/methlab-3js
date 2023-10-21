@@ -62,7 +62,7 @@ export const config = {
                     new THREE.Vector3(-0.8, 0, 8),
                     new THREE.Vector3(-0.8, 0, -0.6)
                 ],
-                visible: true,
+                visible: false,
                 color: 0x00ff00,
             },
             interactiveRegion: {
@@ -73,7 +73,7 @@ export const config = {
                     new THREE.Vector3(-0.5, 0, 4.5),
                     new THREE.Vector3(-0.5, 0, 2.5)
                 ],
-                visible: true,
+                visible: false,
                 color: 0xff0000,
             },
             bgm: 'mp3/deep-research-144798.mp3',

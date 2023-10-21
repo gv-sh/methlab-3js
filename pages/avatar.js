@@ -34,6 +34,15 @@ export class Avatar {
 		this.emptyNode = new THREE.Object3D();
 		this.heading = 'front';
 		this.isTurningBack = false;
+		this.turning = false;
+		this.instructionQueue = [];
+		this.isProcessingQueue = false;
+
+		this.cameraLerpFactor = 0.08;  // Determines how quickly the camera follows: lower is slower
+		this.lookAtLerpFactor = 0.25;  // Determines how quickly the camera looks at the target: lower is slower
+		this.targetPosition = new THREE.Vector3();  // The position the camera is moving towards
+		this.targetLookAt = new THREE.Vector3();  // The point the camera is looking towards
+
 
 		this.keysPressed = {
 			'w': false,
@@ -165,6 +174,9 @@ export class Avatar {
 				'turnBack': this.turnBackAction
 			}
 
+			// Remove the animation clip at index 0 from this.animations
+
+
 			this.actions['idle'].play();
 			this.heading = 'N';
 
@@ -173,18 +185,46 @@ export class Avatar {
 			this.actions['turnRight'].setLoop(THREE.LoopOnce);
 			this.actions['turnBack'].setLoop(THREE.LoopOnce);
 
-			this.updateCamera();
+			this.setInitialCameraPosition();
 
 			this.animationCallback();
 
 		});
 	}
 
+	enqueueInstruction(instruction) {
+		this.instructionQueue.push(instruction);
+		this.processInstructionQueue();
+	}
+
+	async processInstructionQueue() {
+		// If we're already processing the queue, or there's nothing left to process, we do nothing
+		if (this.isProcessingQueue || this.instructionQueue.length === 0) {
+			return;
+		}
+
+		this.isProcessingQueue = true;
+
+		const nextInstruction = this.instructionQueue.shift(); // Get the next instruction
+
+		try {
+			await nextInstruction(); // Execute it
+		} catch (error) {
+			console.error('Error during instruction execution:', error);
+			// Handle error appropriately
+		}
+
+		this.isProcessingQueue = false;
+
+		// Recursive call to process any remaining instructions
+		this.processInstructionQueue();
+	}
+
 	isWalking() {
 		return this.actions['walk'].isRunning();
 	}
 
-	toggleWalking(state) {
+	async toggleWalking(state) {
 		if (state) {
 			this.actions['idle'].stop();
 			this.actions['walk'].play();
@@ -192,10 +232,24 @@ export class Avatar {
 			this.actions['walk'].stop();
 			this.actions['idle'].play();
 		}
+
+		// // Pause any other actions that are running
+		// Object.values(this.actions).forEach(a => {
+		// 	if (a.isRunning() && a !== this.actions['walk']) {
+		// 		a.stop();
+		// 	}
+		// });
+
+		// if (state) {
+		// 	this.actions['walk'].play();
+		// } else {
+		// 	this.actions['walk'].stop();
+		// 	this.actions['idle'].play();
+
+		// }
 	}
 
-
-	updateCamera() {
+	setInitialCameraPosition() {
 		// 1. Get the offset from the avatar's position.
 		// Note: The z-value is negative to position the camera behind the avatar.
 		const offset = new THREE.Vector3(0, this.followCamOffset.y, this.followCamOffset.z);
@@ -224,6 +278,52 @@ export class Avatar {
 		if (this.orbitControls) {
 			this.orbitControls.target.copy(center);
 		}
+
+		// Set the target position to the current camera position
+		this.targetPosition.copy(this.followCam.position);
+
+		// Set the target look at to the current camera look at
+		this.targetLookAt.copy(center);
+
+	}
+
+
+	updateCamera() {
+
+		// 1. Get the offset from the avatar's position.
+		// Note: The z-value is negative to position the camera behind the avatar.
+		const offset = new THREE.Vector3(0, this.followCamOffset.y, this.followCamOffset.z);
+
+		// 2. Adjust the offset based on the avatar's orientation
+		// offset.applyQuaternion(this.model.quaternion);
+
+		const targetPosition = this.model.position.clone().add(offset);
+
+		// 3. Set the camera's position to the adjusted offset
+		// this.followCam.position.copy(this.model.position).add(offset);
+		this.followCam.position.lerp(targetPosition, this.cameraLerpFactor);
+
+		// 4. Compute the bounding box of the model
+		const boundingBox = new THREE.Box3().setFromObject(this.model);
+
+		// 5. Get the center of this bounding box
+		const center = new THREE.Vector3();
+
+		boundingBox.getCenter(center);
+
+		// Slightly look at the bottom of the avatar
+		center.y += 0.75;
+
+		// 6. Make the camera look at the center of the avatar
+		// this.followCam.lookAt(center);
+		this.targetLookAt.lerp(center, this.lookAtLerpFactor);
+
+		this.followCam.lookAt(this.targetLookAt);
+
+		// Move the orbit controls to the new position
+		if (this.orbitControls) {
+			this.orbitControls.target.copy(center);
+		}
 	}
 
 	isInTheInteractiveRegion() {
@@ -244,9 +344,50 @@ export class Avatar {
 		return false;
 	}
 
-	async turnTo(direction) {
+	async turnToOld(direction) {
 
 		// Define the action based on the direction parameter, e.g., this.actions[direction] 
+		const action = this.actions[direction];
+		if (!action) {
+			console.error('Invalid direction');
+			return;
+		}
+
+		// Similar to your current turn functions
+		// Stop other actions, configure the turn animation, and play it
+		Object.values(this.actions).forEach(a => {
+			if (a.isRunning() && a !== action) {
+				a.fadeOut(0.2);
+			}
+		});
+
+
+		action.reset().setEffectiveTimeScale(1).setEffectiveWeight(1);
+		action.clampWhenFinished = false;
+
+		// Play the animation
+		action.play();
+
+		// Set the next animation to idle
+
+		// Wait for the turn animation to complete (using your existing promise-based approach)
+		await this.whenAnimationFinished(action).then(() => {
+			switch (direction) {
+				case 'turnLeft':
+					this.model.rotateY(Math.PI / 2);
+					break;
+				case 'turnRight':
+					this.model.rotateY(-Math.PI / 2);
+					break;
+				case 'turnBack':
+					this.model.rotateY(Math.PI);
+					break;
+			}
+		});
+	}
+
+	async turnTo(direction) {
+		// Define the action based on the direction parameter, e.g., this.actions[direction]
 		const action = this.actions[direction];
 		if (!action) {
 			console.error('Invalid direction');
@@ -261,10 +402,8 @@ export class Avatar {
 			}
 		});
 
-		action.reset().setEffectiveTimeScale(3).setEffectiveWeight(1.5).fadeIn(0.5);
-
-
-		action.clampWhenFinished = false;
+		action.reset().setEffectiveTimeScale(1).setEffectiveWeight(1);
+		action.clampWhenFinished = false; // Set this to true to ensure it stays at the last frame of the animation
 
 		// Play the animation
 		action.play();
@@ -272,26 +411,42 @@ export class Avatar {
 		// Wait for the turn animation to complete (using your existing promise-based approach)
 		await this.whenAnimationFinished(action);
 
+		// Update the model's rotation based on the direction after the turning animation is completed.
+		let newRotation;
 		switch (direction) {
 			case 'turnLeft':
-				this.model.rotateY(Math.PI / 2);
-				console.log('turning left');
+				newRotation = this.model.rotation.y - Math.PI / 2;
 				break;
 			case 'turnRight':
-				this.model.rotateY(-Math.PI / 2);
-				console.log('turning right');
+				newRotation = this.model.rotation.y + Math.PI / 2;
 				break;
 			case 'turnBack':
-				this.model.rotateY(Math.PI);
-				console.log('turning back');
+				newRotation = this.model.rotation.y + Math.PI;
 				break;
 		}
+
+		// Apply the new rotation
+		this.model.rotation.y = newRotation;
+
+		// Ensure the rotation takes effect
+		this.model.updateMatrix();
+
+		// Play the idle animation after the turn is complete
+		const idleAction = this.actions['idle']; // Assuming 'idle' is the name of your idle action
+		if (!idleAction) {
+			console.error('Idle action not found');
+			return;
+		}
+
+		idleAction.reset().setEffectiveTimeScale(1).setEffectiveWeight(1);
+		idleAction.play();
 	}
+
 
 	whenAnimationFinished(action) {
 		return new Promise(resolve => {
-			// This assumes your 'action' or 'mixer' instance emits 'finished' when done.
 			const finishCallback = () => {
+				console.log('Animation finished');
 				action.getMixer().removeEventListener('finished', finishCallback);
 				resolve();
 			};
@@ -300,7 +455,7 @@ export class Avatar {
 		});
 	}
 
-	translateAvatarZ(amount) {
+	async translateAvatarZ(amount) {
 		// Create a model clone 
 		const modelClone = this.model.clone();
 		// Translate the clone forward
@@ -407,7 +562,7 @@ export class Avatar {
 		return null;
 	}
 
-	handleKeyDown(event) {
+	async handleKeyDown(event) {
 		// When a key is pressed, set the corresponding state to true
 		const key = event.key.toLowerCase();
 		this.keysPressed[key] = true;
@@ -428,25 +583,49 @@ export class Avatar {
 				break;
 		}
 
+		// If two keys are pressed, ignore the second key
+		if (this.keysPressed['w'] && this.keysPressed['s']) {
+			this.keysPressed['s'] = false;
+		}
+
+		if (this.keysPressed['a'] && this.keysPressed['d']) {
+			this.keysPressed['d'] = false;
+		}
+
 		// Find the required turn
 		const requiredTurn = this.findRequiredTurn(newDirection);
 		console.log('required turn ' + requiredTurn);
 
-		if (requiredTurn) {
-			this.turnTo(requiredTurn);
-			this.heading = newDirection;
-			console.log('turning to ' + newDirection);
+		if (requiredTurn !== null && !this.turning) {
+			this.turning = true;
+			// Enqueue turning instruction
+			this.enqueueInstruction(async () => {
+				await this.turnTo(requiredTurn);
+				this.heading = newDirection;
+				this.turning = false;
+				console.log('turned to ' + newDirection);
+			});
 		}
 
 		// After animation completes, set the heading and potentially initiate walking
-		if (this.keysPressed['w'] || this.keysPressed['a'] || this.keysPressed['s'] || this.keysPressed['d']) {
+		if (!this.turning && (this.keysPressed['w'] || this.keysPressed['a'] || this.keysPressed['s'] || this.keysPressed['d'])) {
 
+			// Check if the avatar is already walking to avoid enqueuing unnecessary instructions
 			if (!this.isWalking()) {
-				this.sound.play();
+				// Enqueue a new instruction for starting to walk
+				this.enqueueInstruction(async () => {
+					// Play walking sound and change walking state
+					this.sound.play();
+					await this.toggleWalking(true);
+					// You may need additional handling here, especially if toggleWalking returns something useful
+				});
 			}
 
-			this.toggleWalking(true);
-			this.translateAvatarZ(-config.avatar.speed);
+			// Enqueue the instruction for translating the avatar's position
+			this.enqueueInstruction(async () => {
+				this.translateAvatarZ(-config.avatar.speed);
+				// If translateAvatarZ is also async, you should await it, and handle any return values/errors
+			});
 		}
 
 	}
@@ -460,8 +639,10 @@ export class Avatar {
 
 		// If no movement keys are pressed, stop the walking sound
 		if (!(this.keysPressed['w'] || this.keysPressed['a'] || this.keysPressed['s'] || this.keysPressed['d'])) {
-			this.sound.stop();
-			this.toggleWalking(false);
+			this.enqueueInstruction(async () => {
+				this.sound.stop();
+				this.toggleWalking(false);
+			});
 		}
 	}
 
