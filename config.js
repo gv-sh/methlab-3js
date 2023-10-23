@@ -24,7 +24,7 @@ export const config = {
             speed: 1.2
         }
     },
-    levels: [
+    worlds: [
         {
             name: 'MethLab',
             scene: {

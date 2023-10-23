@@ -97,28 +97,6 @@ img {
     backdrop-filter: blur(12px);
 }
 
-#right-bottom-ui {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 90;
-    backdrop-filter: blur(12px);
-}
-
-#soundToggle {
-    background-color: #222;
-    color: #fff;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-#soundToggle:hover {
-    background-color: #555;
-}
-
 .table {
     display: table;
     width: 100%;
@@ -149,3 +127,28 @@ img {
 .cell:last-child {
     opacity: 0.5;
 }
+
+.right-bottom-ui {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 90;
+  }
+
+  .soundToggle {
+    background-color: #222;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    z-index: 120;
+    font-size: 12px;
+    backdrop-filter: blur(12px);
+  }
+  
+  .soundToggle:hover {
+    background-color: #555;
+  }
+  
