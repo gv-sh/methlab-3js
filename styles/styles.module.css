@@ -35,7 +35,7 @@
 
   display: none;
   flex-direction: column;
-
+  z-index: 100;
 }
 
 .modalHeader {

@@ -4,6 +4,7 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { config } from '../config.js';
 import { Level } from '../lib/Level.js';
+import styles from '../styles/styles.module.css';
 
 
 const CubePage = () => {
@@ -11,8 +12,9 @@ const CubePage = () => {
     const [loadingProgress, setLoadingProgress] = useState(0);
     const [loadingText, setLoadingText] = useState('Loading assets...');
     const [isLoaded, setIsLoaded] = useState(false);
-    let soundOn = true; // Assuming sound is on by default
+    const [showModal, setShowModal] = useState(false);
 
+    let soundOn = true; // Assuming sound is on by default
 
     useEffect(() => {
 
@@ -32,7 +34,6 @@ const CubePage = () => {
 
             if (soundOn) {
                 soundButton.innerText = "Sound: ON";
-                // Add a class soundOn to the body to indicate that sound is on
                 soundButton.classList.add('soundOn');
                 level.setVolume(0.5);
                 level.keyboardController.setVolume(0.5);
@@ -44,6 +45,21 @@ const CubePage = () => {
                 level.setVolume(0);
                 level.keyboardController.setVolume(0);
             }
+        });
+
+        // Add event listener for SPACE key
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                // Confirm if the player is inside an interactive region
+                if (level.isPlayerInsideInteractiveRegion()) {
+                    document.getElementById('modal').style.display = 'flex';
+                }
+            }
+        });
+
+        // Add event listener for close button
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('modal').style.display = 'none';
         });
 
         const main = async () => {
@@ -110,6 +126,15 @@ const CubePage = () => {
                     </div>
                 </div>
             )}
+            <div id="modal" className={styles.modal}>
+                <div id="modalHeader" className={styles.modalHeader}>
+                    <p id="modalTitle" className={styles.modalTitle}>MethLAB</p>
+                    <button id="closeModal" className={styles.closeModal}>&times;</button>
+                </div>
+                <div id="modalBody" className={styles.modalBody}>
+                    <p id="modalText" className={styles.modalText}>Modal UI placeholder</p>
+                </div>
+            </div>
             <div id="cube-container" style={{ width: '100vw', height: '100vh' }}>
             </div>
             <div id="left-bottom-ui">

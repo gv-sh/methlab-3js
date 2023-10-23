@@ -57,9 +57,6 @@ export const config = {
                             [-0.5, 0, 4.5],
                             [-0.5, 0, 2.5] // Last vertex must be same as first vertex
                         ],
-                        [
-                            // Add vertices of next polygon here
-                        ]
                     ],
                     visible: true,
                     color: 0xff0000,
@@ -72,9 +69,6 @@ export const config = {
                             [1, 0, 7.5],
                             [-0.5, 0, 7.5],
                             [-0.5, 0, 5.5] // Last vertex must be same as first vertex
-                        ],
-                        [
-                            // Add vertices of next polygon here
                         ]
                     ],
                     visible: true,
