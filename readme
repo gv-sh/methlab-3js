@@ -32,8 +32,8 @@ lib
  ├── sound
  │   └── AudioControl
  └── vendor
-     ├── MethLab
-     └── Spacebar
+     ├── MethLab   <- Edit these file with your modal UI
+     └── Spacebar  <- Edit these file with your modal UI
 
 Suggestions
 -----------
