@@ -17,6 +17,9 @@ lib
  ├── gameplay
  │   ├── KeyboardControl
  │   └── World
+ ├── loaders
+ │   ├── GLBModel
+ │   └── HDRMap
  ├── interface
  │   ├── KeyboardMap
  │   ├── LandingScreen

@@ -30,7 +30,7 @@ export const config = {
             scene: {
                 modelPath: 'glb/MethLab.glb',
                 environmentMap: 'hdr/MethLab.hdr',
-                elevationOffset: -.25,
+                elevationOffset: -0.25,
                 bgm: 'mp3/deep-research-144798.mp3',
                 walkableRegions: {
                     whitelist: [
@@ -89,7 +89,7 @@ export const config = {
             scene: {
                 modelPath: 'glb/Spacebar.glb',
                 environmentMap: 'hdr/Spacebar.hdr',
-                elevationOffset: -.25,
+                elevationOffset: 5.5,
                 bgm: 'mp3/deep-research-144798.mp3',
                 walkableRegions: {
                     whitelist: [

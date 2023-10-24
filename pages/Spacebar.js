@@ -1,10 +1,9 @@
 import { Simulator } from '../lib/interface/Simulator';
-import WorldSelector from '../lib/interface/WorldSelector';
 
 export const Index = () => {
     return (
         <div>
-            <WorldSelector />
+            <Simulator worldID={1}/>
         </div>
     );
 }
