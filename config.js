@@ -24,6 +24,19 @@ export const config = {
             speed: 1.2
         }
     },
+    worldSelector: {
+        sceneModel: 'glb/WorldSelector3.glb',
+        player1Model: 'glb/Walter.glb',
+        player2Model: 'glb/GusFring.glb',
+        player1IdleState: 1,
+        player2IdleState: 0,
+        camera: {
+            fov: 15,
+            near: 0.1,
+            far: 1000,
+            initialPosition: [0, 3, 25]
+        },
+    },
     worlds: [
         {
             name: 'MethLab',
