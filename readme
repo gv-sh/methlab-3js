@@ -37,6 +37,9 @@ lib
      ├── MethLab   <- Custom modal 1
      └── Spacebar  <- Custom modal 2
 
-Suggestions
------------
+Notes
+-----
 - Move the assets to a CDN with cache control
+- The selector model could have been a bit wider or longer for it to work across devices of different sizes as their crop sizes would be different. 
+- The selector model file had pre-existing character models which were removed before adding as they had un-semantic names and were hard to be traced. The player models have been added separately so click handler can be added to them. If you wish to update the world selector model, make sure you remove the player models from the file before adding it to the project.
+- The debug lines can be disabled through Config file.
